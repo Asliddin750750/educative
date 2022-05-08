@@ -120,7 +120,7 @@ class CourseView(RetrieveAPIView):
     serializer_class = CourseSerializer
 
     def get_queryset(self):
-        return Course.objects.annotate(duration=Sum('section__lesson__duration')).prefetch_related(
+        return Course.objects.annotate(duration=Sum('section__section__duration')).prefetch_related(
             Prefetch('category', queryset=Category.objects.only('name')),
             Prefetch('teacher', queryset=User.objects.only('id', 'first_name', 'last_name', 'photo'))
         )

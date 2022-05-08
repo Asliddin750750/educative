@@ -1,5 +1,4 @@
 from django.urls import path
-
 from course.views import CategoryAddView, CategoryEditView, CategoryView, CategoryDeleteView, CategoryListView, \
     CourseAddView, CourseEditView, CourseListView, CourseView, CourseDeleteView, ReviewAddView, ReviewListView, \
     SectionAddView, SectionEditView, SectionView, SectionListView, SectionDeleteView, LessonAddView, LessonEditView, \
@@ -41,14 +40,3 @@ urlpatterns = [
     # extra
     path('teachers/', TeachersView.as_view(), name='teachers')
 ]
-
-# 1.prefetch
-# 2.mp4 (filefield video validator)
-# 3.comments
-# 4.test all apis
-# 5.bazani to'ldirish uchun komanda
-# 6.course slug field unique with time.time()
-# 7.https://educative-online-platform.herokuapp.com/ bilan solishtirish
-# 8.@property
-#     def student_count(self):
-#         return self.students.count()

@@ -42,11 +42,3 @@ class ConfirmTeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('confirmed',)
-
-
-# class TeacherSerializer(serializers.ModelSerializer):
-#     rating = serializers.FloatField(default=0)
-#
-#     class Meta:
-#         model = User
-#         fields = ('first_name', 'last_name', 'photo', 'rating')

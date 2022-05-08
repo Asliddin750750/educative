@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from course.models import Category, Course, Review, Section, Lesson
 
 admin.site.register(Category)

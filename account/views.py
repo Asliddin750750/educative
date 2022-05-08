@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -37,6 +39,8 @@ class LoginView(APIView):
 class RegisterView(APIView):
     """
     Ro'yxatdan o'tish
+    1. O'qituvchi bo'lib ro'yxatdan o'tayotgan bo'lsa, frontda job: 1 yuboriladi
+    1. O'quvchi bo'lib ro'yxatdan o'tayotgan bo'lsa, frontda job: 2 yuboriladi
     """
     permission_classes = [~IsAuthenticated]
 
@@ -46,6 +50,21 @@ class RegisterView(APIView):
         user = serializer.save()
 
         token = Token.objects.create(user=user)
+
+        if user.job == 1:
+            layer = get_channel_layer()
+            async_to_sync(layer.group_send)(
+                'notification_3',
+                {
+                    "type": "send_message",
+                    "message": {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                        "username": user.username
+                    }
+                }
+            )
 
         return Response({
             'token': token.key,
@@ -62,11 +81,3 @@ class ConfirmTeacherView(UpdateAPIView):
 
     def get_queryset(self):
         return User.objects.filter(job=1)
-
-
-# class TeacherView(RetrieveAPIView):
-#     serializer_class = TeacherSerializer
-#
-#     def get_queryset(self):
-#         stars = Review.objects.filter(course__teacher_id=self.kwargs.get('pk')).aggregate(rating=Avg('stars'))
-#         return User.objects.filter(job=1).annotate(rating=Value(stars.get('rating'), output_field=FloatField()))

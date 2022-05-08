@@ -5,6 +5,5 @@ app_name = 'account'
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('register/', RegisterView.as_view(), name='register'),
-    path('confirm/teacher/<int:pk>/', ConfirmTeacherView.as_view(), name='confirm-teacher'),
-    # path('teacher/<int:pk>/', TeacherView.as_view(), name='teacher')
+    path('confirm/teacher/<int:pk>/', ConfirmTeacherView.as_view(), name='confirm-teacher')
 ]

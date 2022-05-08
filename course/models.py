@@ -30,7 +30,7 @@ class Course(models.Model):
     intro_video = models.FileField(upload_to='course/intro_videos/', validators=[VideoValidator()])
     difficulty = models.CharField(max_length=10, choices=DIFFICULTIES)
     price = models.IntegerField()
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     slug = models.SlugField(unique=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -57,7 +57,7 @@ class Review(models.Model):
 
 class Section(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name

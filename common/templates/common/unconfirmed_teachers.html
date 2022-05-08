@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Unconfirmed teachers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+
+<body>
+<div class="container">
+    <div class="flex justify-content-center">
+    </div>
+    <div class="row mt-5 justify-content-center">
+        <div class="col-4">
+            <p class="fw-bold">Request user: {{ request.user }}</p>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-6">
+            <p>Tasdiqlanmagan o'qituvchilar <span id="unconfirmed_count">{{ unconfirmed_count }}</span></p>
+            <table class="table table-striped" id="unconfirmed_teachers_table">
+                <tr>
+                    <td>Username</td>
+                    <td>First name</td>
+                    <td>Last name</td>
+                    <td>Actions</td>
+                </tr>
+                {% for teacher in unconfirmed_teachers %}
+                    <tr id="teacher_{{ teacher.id }}">
+                        <td>{{ teacher.username }}</td>
+                        <td>{{ teacher.first_name }}</td>
+                        <td>{{ teacher.last_name }}</td>
+                        <td>
+                            <div class="nowrap">
+                                <button class="btn btn-info" onclick="confirmTeacher({{ teacher.id }})">Confirm</button>
+                                <button class="btn btn-danger">Reject</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    async function confirmTeacher(teacher_id) {
+        let base_url = window.location.protocol + '//' + window.location.host
+        console.log()
+        const response = await fetch(`${base_url}/account/confirm/teacher/${teacher_id}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Token {{ token }}'
+            },
+            body: JSON.stringify({
+                confirmed: true
+            })
+        })
+        if (response.status === 200) {
+            document.querySelector(`#teacher_${teacher_id}`).innerHTML = '';
+            let unconfirmed_count = document.querySelector('#unconfirmed_count').innerHTML;
+            document.querySelector('#unconfirmed_count').innerHTML = parseInt(unconfirmed_count) - 1;
+        }
+    }
+
+    const notificationSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/notification/'
+    );
+
+    notificationSocket.onmessage = function (e) {
+        let unconfirmed_count = document.querySelector('#unconfirmed_count').innerHTML;
+        document.querySelector('#unconfirmed_count').innerHTML = parseInt(unconfirmed_count) + 1;
+
+        const data = JSON.parse(e.data);
+
+        let table = document.querySelector('#unconfirmed_teachers_table')
+        let row = table.insertRow(-1);
+        row.setAttribute('id', `teacher_${data.message.id}`);
+        let cell0 = row.insertCell(0);
+        let cell1 = row.insertCell(1);
+        let cell2 = row.insertCell(2);
+        let cell3 = row.insertCell(3);
+        cell0.innerHTML = data.message.username
+        cell1.innerHTML = data.message.first_name
+        cell2.innerHTML = data.message.last_name
+        cell3.innerHTML = "<div class='nowrap'>" +
+            "<button class='btn btn-info' onclick='confirmTeacher(" + parseInt(data.message.id) + ")'>Confirm</button>" +
+            " <button class='btn btn-danger'>Reject</button>" +
+            "</div>"
+    };
+
+    notificationSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+</script>
+</body>
+</html>

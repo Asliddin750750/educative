@@ -4,6 +4,8 @@ from django.db.models import Avg
 from django.utils.text import slugify
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from account.models import User
 from course.models import Category, Course, Review, Section, Lesson
 
@@ -53,7 +55,13 @@ class CourseAddSerializer(serializers.ModelSerializer):
 class CourseEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        exclude = ('id', 'teacher', 'students', 'last_update')
+        exclude = ('id', 'teacher', 'students', 'last_update', 'slug')
+
+    def update(self, instance, validated_data):
+        if validated_data.get('name'):
+            instance.slug = f"{str(int(time.time()))}-{slugify(validated_data.get('name'))}"
+        data = super().update(instance, validated_data)
+        return data
 
 
 class CourseListSerializer(serializers.ModelSerializer):
@@ -132,6 +140,13 @@ class SectionAddSerializer(serializers.ModelSerializer):
         model = Section
         fields = ('course', 'name')
 
+    def validate(self, attrs):
+        course = attrs.get('course')
+        if not Course.objects.filter(id=course.id, teacher_id=self.context.get('request').user.id).exists():
+            raise ValidationError('Bu kursga bo\'lim qo\'sha olmaysiz')
+        else:
+            return attrs
+
 
 class SectionEditSerializer(serializers.ModelSerializer):
     class Meta:
@@ -180,6 +195,13 @@ class LessonAddSerializer(serializers.ModelSerializer):
         validated_data['duration'] = int(video_duration)
         data = super().create(validated_data)
         return data
+
+    def validate(self, attrs):
+        section = attrs.get('section')
+        if not Section.objects.filter(id=section.id, course__teacher_id=self.context.get('request').user.id).exists():
+            raise ValidationError('Bu bo\'limga dars qo\'sha olmaysiz')
+        else:
+            return attrs
 
 
 class LessonEditSerializer(serializers.ModelSerializer):
