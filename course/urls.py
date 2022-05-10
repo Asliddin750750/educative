@@ -3,7 +3,7 @@ from course.views import CategoryAddView, CategoryEditView, CategoryView, Catego
     CourseAddView, CourseEditView, CourseListView, CourseView, CourseDeleteView, ReviewAddView, ReviewListView, \
     SectionAddView, SectionEditView, SectionView, SectionListView, SectionDeleteView, LessonAddView, LessonEditView, \
     LessonView, LessonListView, LessonDeleteView, TeachersView, CourseListForStudentView, CourseListForTeacherView, \
-    SectionListWithLessonsView
+    SectionListWithLessonsView, BuyCourseView
 
 app_name = 'course'
 urlpatterns = [
@@ -38,5 +38,6 @@ urlpatterns = [
     path('lesson/list/', LessonListView.as_view(), name='lesson-list'),
     path('lesson/delete/<int:pk>/', LessonDeleteView.as_view(), name='lesson-delete'),
     # extra
-    path('teachers/', TeachersView.as_view(), name='teachers')
+    path('teachers/', TeachersView.as_view(), name='teachers'),
+    path('buy/<int:pk>/', BuyCourseView.as_view(), name='buy')
 ]

@@ -1,7 +1,11 @@
 from django.db.models import Prefetch, Count, Sum
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
 from rest_framework.generics import CreateAPIView, UpdateAPIView, RetrieveAPIView, ListAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from account.models import User
 from config.permissions import IsSuperUser, IsTeacher, IsConfirmedTeacher, IsStudent
 from course.models import Category, Course, Review, Section, Lesson
@@ -304,3 +308,25 @@ class TeachersView(ListAPIView):
                 students_count=Count('students')
             ))
         )
+
+
+class BuyCourseView(APIView):
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def get(self, request, pk):
+        if Course.objects.filter(id=pk, students=request.user).exists():
+            return Response({
+                'data': 'Kursni allaqachon sotib olgansiz'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            course = Course.objects.get(id=pk)
+            course.students.add(request.user)
+            course.save()
+            return Response({
+                'data': 'Kursni muvaffaqiyatli sotib oldingiz'
+            }, status=status.HTTP_200_OK)
+        except:
+            return Response({
+                'data': 'Kurs topilmadi'
+            }, status=status.HTTP_404_NOT_FOUND)
